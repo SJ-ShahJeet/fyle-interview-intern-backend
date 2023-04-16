@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, make_response, jsonify
 from core import db
 from core.apis import decorators
 from core.apis.responses import APIResponse
@@ -35,7 +35,10 @@ def upsert_assignment(p, incoming_payload):
 @decorators.accept_payload
 @decorators.auth_principal
 def submit_assignment(p, incoming_payload):
-    """Submit an assignment"""
+    assignment =  Assignment.get_by_id(incoming_payload["id"])
+    if assignment.state =="SUBMITTED":
+        return make_response(jsonify({"error":"FyleError","status_code":"400","message":"only a draft assignment can be submitted"}),400)
+
     submit_assignment_payload = AssignmentSubmitSchema().load(incoming_payload)
 
     submitted_assignment = Assignment.submit(
